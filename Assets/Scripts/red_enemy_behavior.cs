@@ -16,10 +16,14 @@ public class red_enemy_behavior : MonoBehaviour {
 
 	Rigidbody2D rigidbody;
 
+    Animator anim;
+
 	void Start () {
 		health_bar = GameObject.Find ("/red_enemy/Canvas/enemy_health_bar").GetComponent<Text>();
-		rigidbody = GetComponent<Rigidbody2D> ();
+		rigidbody = this.GetComponent<Rigidbody2D> ();
 		waitTime = (int)Mathf.Floor (Random.Range (0, waitTimeLimit));
+
+        anim = this.GetComponent<Animator>();
 	}
 
 	void Update () {
@@ -28,7 +32,7 @@ public class red_enemy_behavior : MonoBehaviour {
 
 		//destroy if health runs out
 		if (health == 0) {
-			Destroy (this.gameObject);
+			StartCoroutine(death());
 		}
 
 		//movement control
@@ -54,4 +58,11 @@ public class red_enemy_behavior : MonoBehaviour {
 		chargeSpeed = (int)Mathf.Floor (Random.Range (-chargeSpeedLimit, chargeSpeedLimit));
 		rigidbody.velocity = new Vector2 (chargeSpeed, 0);
 	}
+
+    IEnumerator death() {
+        GameObject.Find("/red_enemy/Canvas").SetActive(false);
+        anim.SetBool("death", true);
+        yield return new WaitForSeconds(0.4f);
+        Destroy(this.gameObject);
+    }
 }
