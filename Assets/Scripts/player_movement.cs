@@ -5,16 +5,15 @@ using UnityEngine.UI;
 
 public class player_movement : MonoBehaviour {
 
+    //variable declarations
+    PlayerStats stats;
+    KillObject kill;
+
 	public string left = "a";			//player controls
 	public string right = "d";
 	public string attack = "Space";
-	Vector3 move;						//movement direction
-	public int player_speed = 10;		//movement speed
 	string face = "right";
-
-	public int player_health = 20;		//maximum health
-	public int current_health;			//current health
-
+    Vector2 move;
 	public GameObject weapon;
 
 	Text health_bar;
@@ -22,32 +21,38 @@ public class player_movement : MonoBehaviour {
     bool isColliding;
 	
 	void Start () {
-		current_health = player_health;
+        stats = this.GetComponent<PlayerStats>();
 
 		health_bar = GameObject.Find ("/Player/Canvas/health_bar").GetComponent<Text> ();
+
+        kill = this.GetComponent<KillObject>();
 	}
 
 	void Update () {
 
-        //this.GetComponent<Rigidbody2D>().velocity = new Vector3(0, 0, 0);
+        //if health runs out, kill the player
+        if (stats.health <= 0)
+        {
+            kill.isDead = true;
+        }
 
-		health_bar.text = current_health.ToString();
+		health_bar.text = stats.health.ToString();
 
 		if(Input.GetKey(left)) {
-			move = new Vector3(-1,0,0);
+			move = new Vector2(-1,0);
 			face = "left";
 		}
 		else if(Input.GetKey(right)) {
-			move = new Vector3(1,0,0);
+			move = new Vector2(1,0);
 			face = "right";
 		}
 		else {
-			move = new Vector3(0,0,0);
+			move = new Vector2(0,0);
 		}
 
 		transform.rotation = Quaternion.identity;
-		transform.position = new Vector3 (transform.position.x, 0, transform.position.z);
-		transform.Translate(move * player_speed * Time.deltaTime);
+		transform.position = new Vector3 (transform.position.x, 0, -8);
+		transform.Translate(move * stats.agility * Time.deltaTime);
 
 
 		if (Input.GetKeyDown (attack)) {
@@ -63,13 +68,17 @@ public class player_movement : MonoBehaviour {
 	}
 	
 	void OnCollisionEnter2D(Collision2D thing) {
-		if (thing.gameObject.tag == "red_enemy") {
-			Debug.Log ("Red enemy hit!");
-			current_health -= 1;
-		} 
+
+        //if the player hits an enemy, detract from health
+		if (thing.gameObject.tag == "Enemy") 
+        {
+			Debug.Log ("Enemy hit!");
+			stats.health -= thing.gameObject.GetComponent<EnemyStats>().strength;
+		}
+            //if the player hits a health, add to health
 		else if (thing.gameObject.tag == "health") {
 			Debug.Log ("5 health added");
-			current_health += 5;
+			stats.health += 5;
 			Destroy(thing.gameObject);
 		}
 	}

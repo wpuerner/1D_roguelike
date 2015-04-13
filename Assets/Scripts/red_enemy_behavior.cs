@@ -4,7 +4,8 @@ using UnityEngine.UI;
 
 public class red_enemy_behavior : MonoBehaviour {
 
-	public int health = 10;
+    //variable declarations
+    EnemyStats stats;
 
 	Text health_bar;
 
@@ -14,25 +15,25 @@ public class red_enemy_behavior : MonoBehaviour {
 	public int waitTimeLimit = 100;
 	public int chargeSpeedLimit = 10;
 
-	Rigidbody2D rigidbody;
+	Rigidbody2D rb;
 
-    Animator anim;
+    KillObject kill;
 
 	void Start () {
-		health_bar = GameObject.Find ("/red_enemy/Canvas/enemy_health_bar").GetComponent<Text>();
-		rigidbody = this.GetComponent<Rigidbody2D> ();
+
+        stats = this.GetComponent<EnemyStats>();
+        
+		rb = this.GetComponent<Rigidbody2D> ();
 		waitTime = (int)Mathf.Floor (Random.Range (0, waitTimeLimit));
 
-        anim = this.GetComponent<Animator>();
+        kill = this.GetComponent<KillObject>();
+
 	}
 
 	void Update () {
-		//display health
-		health_bar.text = health.ToString ();
-
 		//destroy if health runs out
-		if (health == 0) {
-			StartCoroutine(death());
+		if (stats.health == 0) {
+            kill.isDead = true;
 		}
 
 		//movement control
@@ -48,21 +49,19 @@ public class red_enemy_behavior : MonoBehaviour {
 
 	}
 
+    //if enemy gets hit
 	void OnCollisionEnter2D(Collision2D col) {
 		if(col.gameObject.tag == "weapon") {
-				health -= col.gameObject.GetComponent<sword_behavior>().attack_strength;
+				stats.health -= col.gameObject.GetComponent<WeaponStats>().strength;
+
+            //show damage value
+
 		}
 	}
 
 	void charge() {
 		chargeSpeed = (int)Mathf.Floor (Random.Range (-chargeSpeedLimit, chargeSpeedLimit));
-		rigidbody.velocity = new Vector2 (chargeSpeed, 0);
+		rb.velocity = new Vector2 (chargeSpeed, 0);
 	}
 
-    IEnumerator death() {
-        GameObject.Find("/red_enemy/Canvas").SetActive(false);
-        anim.SetBool("death", true);
-        yield return new WaitForSeconds(0.4f);
-        Destroy(this.gameObject);
-    }
 }

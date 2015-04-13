@@ -3,8 +3,6 @@ using System.Collections;
 
 public class sword_behavior : MonoBehaviour {
 
-	public int attack_strength;
-
 	string attack;
 
 	// Use this for initialization
